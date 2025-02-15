@@ -19,11 +19,11 @@ interface ContextMenuProps {
   selectedText: string;
   darkMode: boolean;
   features: Feature[];
-  setFeatures: (features: Feature[]) => void;
   libraries: Library[];
+  user: any;
 }
 
-export function ContextMenu({ x, y, onClose, selectedText, darkMode, features, libraries }: ContextMenuProps) {
+export function ContextMenu({ x, y, onClose, selectedText, darkMode, features, libraries, user }: ContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const [meaning, setMeaning] = useState<string | null>(null);
   const [showMenu, setShowMenu] = useState(true);
@@ -124,37 +124,17 @@ export function ContextMenu({ x, y, onClose, selectedText, darkMode, features, l
     setShowSaveOptions(true);
   };
 
-  // const saveToFolder = async (folder: string) => {
-  //   const payload = {
-  //     text: saveType === 'selection' ? selectedText : meaning,
-  //     folder,
-  //   };
-  //   console.log('Save to folder:', payload);
-  //   try {
-  //     const response = await fetch("http://localhost:5000/saveSelection", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify(payload),
-  //     });
-  //     const data = await response.json();
-  //     console.log("Saved successfully", data);
-  //     setShowSaveOptions(false);
-  //     setSaveType(null);
-  //     onClose();
-  //   } catch (error) {
-  //     console.error("Error saving selection:", error);
-  //   }
-  // };
 
-  const saveToFolder = async (collection: string) => {
+  const saveToFolder = async (topic: string, user:string) => {
     const payload = {
-      selectedText,
+      word:selectedText,
       meaning,
-      collection, // Now using the library's collection name
+      topic,
+      user, // Now using the library's collection name
     };
-    
+    console.log('Save to folder:', payload);
     try {
-      const response = await fetch("http://localhost:5000/saveSelection", {
+      const response = await fetch("http://localhost:5000/vocab/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -178,28 +158,6 @@ export function ContextMenu({ x, y, onClose, selectedText, darkMode, features, l
     onClose();
   };
 
-  // if (showSaveOptions) {
-  //   return (
-  //     <div
-  //       className={`fixed z-50 ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg rounded-lg py-2 min-w-[200px] max-w-[90vw]`}
-  //       style={{ left: Math.min(x, window.innerWidth - 220), top: `${y}px` }}
-  //     >
-  //       <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">
-  //         <h3 className="font-semibold">Select Folder:</h3>
-  //         {Libraryi.map((folder) => (
-  //           <button
-  //             key={folder}
-  //             onClick={() => saveToFolder(folder)}
-  //             className="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700"
-  //           >
-  //             {folder}
-  //           </button>
-  //         ))}
-  //       </div>
-  //     </div>
-  //   );
-  // }
-
 
 if (showSaveOptions) {
   return (
@@ -213,8 +171,8 @@ if (showSaveOptions) {
           .filter(lib => lib.enabled) // Only show enabled libraries
           .map((library) => (
             <button
-              key={library.id}
-              onClick={() => saveToFolder(library.collection)}
+              key={library._id}
+              onClick={() => saveToFolder(library.name, user.Id)}
               className="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700"
             >
               {library.name}

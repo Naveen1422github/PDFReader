@@ -173,8 +173,8 @@ function App() {
           onClose={() => setContextMenu(prev => ({ ...prev, visible: false }))}
           darkMode={darkMode}
           features={features}
-          setFeatures={setFeatures}
           libraries={libraries}
+          user={user}
         />
         
     )}

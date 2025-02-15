@@ -10,11 +10,12 @@ const vocabSchema = new mongoose.Schema(
 		type: String,
 		required: true
 	},
-	parent:{
+	topic:{
 		type: String
 	},
-	category:{
-		type: String
+	user:{
+		type: mongoose.Schema.Types.ObjectId,
+		ref: 'User',
 	},
  }, 
  {timestamps: true}

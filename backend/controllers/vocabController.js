@@ -39,10 +39,10 @@ export const updateWord = async (req, res) => {
 
 export const addWord = async (req, res) => {
 	const vocab = req.body;
+	console.log("req.body", req.body);
 	if (vocab.length < 1) {
 		return res.status(400).json({ success: false, message: "Please provide some data" });
 	}
-
 
 	const newWord = new Vocab(vocab)
 

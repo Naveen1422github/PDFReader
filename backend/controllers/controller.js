@@ -161,7 +161,6 @@ export const getAllTopic = async (req, res) => {
     const user = req.body.user;
     try {
         const topic = await Topic.find({user});
-        console.log("topic", topic);
         res.status(200).json({ success: true, data: topic });
     } catch (error) {
         console.error("Error in Fetching data:", error.message);

@@ -3,17 +3,37 @@ import React, { useState, useEffect } from 'react';
 import { pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Feature } from './components/Settings/Settings';
+import { Library } from './components/Settings/Settings';
 
 import { Header } from './components/Header/Header';
 import { ContextMenu } from './components/ContextMenu/ContextMenu';
 import { PDFUploader } from './components/PDFViewer/PDFUploader';
 import { PDFViewer } from './components/PDFViewer/PDFViewer';
-import { PDFControls } from './components/PDFViewer/PDFControls';
+// import { PDFControls } from './components/PDFViewer/PDFControls';
+import { Settings } from './components/Settings/Settings';
+
+import { AuthProvider, useAuth } from './login/AuthContext';
+import { LoginForm } from './login/LoginForm';
+import { RegisterForm } from './login/RegisterForm';
+
+
+function ProtectedRoute({ children }: { children: JSX.Element }) {
+  const { user, loading } = useAuth();
+
+  if (loading) return <div>Loading...</div>;
+  return user ? children : <Navigate to="/login" replace />;
+}
+
 
 // Set up PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
+const user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user') as string) : null;
+
 function App() {
+
   const [darkMode, setDarkMode] = useState(false);
   const [numPages, setNumPages] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState(1);
@@ -35,7 +55,49 @@ function App() {
     selectedText: '',
   });
 
+  const [features, setFeatures] = useState<Feature[]>([]);
+  
   useEffect(() => {
+    const fetchFeatures = async () => {
+      const response = await fetch('http://localhost:5000/getFeatures', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user: user?.Id }),
+      });
+      const saved = await response.json();
+      setFeatures(saved.data);
+    };
+  
+    fetchFeatures();
+  }, []);
+
+  console.log("features", features);
+
+
+  const [libraries, setLibraries] = useState<Library[]>([]);
+
+  useEffect(() => {
+    const fetchLibraries = async () => {
+      const response = await fetch('http://localhost:5000/getTopics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user: user?.Id }),
+      });
+      const saved = await response.json();
+      setLibraries(saved.data);
+    };
+  
+    fetchLibraries();
+  }
+  , []);
+  
+  console.log("libraries", libraries);
+
+  useEffect(() => {
+    const savedFeatures = localStorage.getItem('contextMenuFeatures');
+    if (savedFeatures) {
+      setFeatures(JSON.parse(savedFeatures));
+    }
     function handleSelectionChange() {
       const selection = window.getSelection();
       if (selection && selection.toString().trim()) {
@@ -51,10 +113,14 @@ function App() {
         setContextMenu(prev => ({ ...prev, visible: false }));
       }
     }
-
     document.addEventListener('selectionchange', handleSelectionChange);
     return () => document.removeEventListener('selectionchange', handleSelectionChange);
   }, []);
+
+  // Save features to localStorage when they change
+  useEffect(() => {
+    localStorage.setItem("contextMenuFeatures", JSON.stringify(features));
+  }, [features]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -96,6 +162,8 @@ function App() {
   };
 
   return (
+    <AuthProvider>
+    <Router>
     <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
     {contextMenu.visible && (
         <ContextMenu
@@ -104,8 +172,14 @@ function App() {
           selectedText={contextMenu.selectedText}
           onClose={() => setContextMenu(prev => ({ ...prev, visible: false }))}
           darkMode={darkMode}
+          features={features}
+          setFeatures={setFeatures}
+          libraries={libraries}
         />
+        
     )}
+
+    
 
       < Header
       darkMode = { darkMode }
@@ -124,26 +198,73 @@ function App() {
         </div>
       )}
 
-      {!pdfFile ? (
-        <PDFUploader onFileChange={handleFileChange} />
-      ) : (
-        <>
-          <PDFViewer
-            file={pdfFile}
-            scale={scale}
-            darkMode={darkMode}
-            isPageLoading={isPageLoading}
-            onLoadSuccess={handleDocumentLoadSuccess}
-            onLoadError={handleDocumentLoadError}
-          />
+      <Routes>
+      <Route path="/login" element={<LoginForm />} />
+      <Route path="/register" element={<RegisterForm />} />
+            <Route
+                path="/"
+                element={
+                  
+                  !pdfFile ? (
+                    <ProtectedRoute>
+                    <PDFUploader onFileChange={handleFileChange} />
+                    </ProtectedRoute>
+                  ) : (
+                    <ProtectedRoute>
+                    <>
+                      <PDFViewer
+                        file={pdfFile}
+                        scale={scale}
+                        darkMode={darkMode}
+                        isPageLoading={isPageLoading}
+                        onLoadSuccess={handleDocumentLoadSuccess}
+                        onLoadError={handleDocumentLoadError}
+                      />
+                    </>
+                    </ProtectedRoute>
+                  )
+                 
+                }
+            />
+            {/* <Route 
+              path="/settings" 
+              element={
+                <Settings 
+                  darkMode={darkMode} 
+                  setDarkMode={setDarkMode} 
+                  setFeatures={setFeatures} 
+                  onClose={() => setMobileMenuOpen(false)} 
+                />
+              } 
+            /> */}
 
-        </>
-      )}
+            <Route 
+              path="/settings" 
+              element={
+                <ProtectedRoute>
+                <Settings
+                  darkMode={darkMode}
+                  setDarkMode={setDarkMode}
+                  features={features}
+                  setFeatures={setFeatures}
+                  libraries={libraries}
+                  setLibraries={setLibraries}
+                  onClose={() => setMobileMenuOpen(false)}
+                  user={user}
+                />
+                </ProtectedRoute>
+              } 
+            />
+          
+      </Routes>
     </div>
   </main>
     </div >
+    </Router>
+    </AuthProvider>
   );
 }
 
 
 export default App;
+

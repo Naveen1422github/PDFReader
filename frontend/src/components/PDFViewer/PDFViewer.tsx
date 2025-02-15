@@ -28,7 +28,7 @@ export function PDFViewer({ file, darkMode, onLoadSuccess, onLoadError }: PDFVie
   };
 
   return (
-    <div className={`p-2 rounded-lg ${darkMode ? "bg-gray-900 text-white" : "bg-white"} shadow-xl max-w-full h-[80vh] overflow-y-auto relative`}>
+    <div className={`p-2 rounded-lg ${darkMode ? "bg-gray-900 text-white" : "bg-white"} shadow-xl max-w-full h-[100vh] overflow-y-auto relative`}>
       {/* PDF Controls */}
       <PDFControls
         numPages={numPages}

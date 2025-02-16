@@ -1,4 +1,5 @@
 import Vocab from "../models/vocabModel.js";
+import mongoose from "mongoose";
 
 export const getWordbyId = async (req, res) => {
 	const id = req.params.id;
@@ -12,9 +13,15 @@ export const getWordbyId = async (req, res) => {
 };
 
 export const getAllWords = async (req, res) => {
+	const user = req.params.user;
+	console.log("req.params", typeof(req.params.user));
+	console.log("user", user);
 	try {
-		const vocab = await Vocab.find();
+
+		const vocab = await Vocab.find({user});
+		console.log("vocab", vocab);
 		res.status(200).json({ success: true, data: vocab });
+		
 	} catch (error) {
 		console.error("Error in Fetching data:", error.message);
 		res.status(500).json({ success: false, message: "Server Error" });

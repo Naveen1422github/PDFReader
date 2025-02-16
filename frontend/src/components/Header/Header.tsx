@@ -69,6 +69,12 @@ export function Header({
             <Link to="/settings" className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
               <Settings className="w-6 h-6" />
             </Link>
+
+            {/* Vocab Section */}
+            <Link to="/library" className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+              <BookOpen className="w-6 h-6" />
+            </Link>
+
           </div>
         </div>
       </div>

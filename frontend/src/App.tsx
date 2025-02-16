@@ -13,27 +13,28 @@ import { PDFUploader } from './components/PDFViewer/PDFUploader';
 import { PDFViewer } from './components/PDFViewer/PDFViewer';
 // import { PDFControls } from './components/PDFViewer/PDFControls';
 import { Settings } from './components/Settings/Settings';
+import { VocabularyPage } from './components/Library/WordLibrary';
 
 import { AuthProvider, useAuth } from './login/AuthContext';
 import { LoginForm } from './login/LoginForm';
 import { RegisterForm } from './login/RegisterForm';
+import { copySync } from 'fs-extra';
 
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const { user, loading } = useAuth();
-
+  console.log("user1", user);
   if (loading) return <div>Loading...</div>;
   return user ? children : <Navigate to="/login" replace />;
 }
 
-
+const user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user') as string) : null;
 // Set up PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
-const user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user') as string) : null;
 
 function App() {
-
+  // const { user, loading } = useAuth();
   const [darkMode, setDarkMode] = useState(false);
   const [numPages, setNumPages] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState(1);
@@ -56,6 +57,8 @@ function App() {
   });
 
   const [features, setFeatures] = useState<Feature[]>([]);
+
+  console.log("user", user);
   
   useEffect(() => {
     const fetchFeatures = async () => {
@@ -94,10 +97,10 @@ function App() {
   console.log("libraries", libraries);
 
   useEffect(() => {
-    const savedFeatures = localStorage.getItem('contextMenuFeatures');
-    if (savedFeatures) {
-      setFeatures(JSON.parse(savedFeatures));
-    }
+    // const savedFeatures = localStorage.getItem('contextMenuFeatures');
+    // if (savedFeatures) {
+    //   setFeatures(JSON.parse(savedFeatures));
+    // }
     function handleSelectionChange() {
       const selection = window.getSelection();
       if (selection && selection.toString().trim()) {
@@ -226,17 +229,6 @@ function App() {
                  
                 }
             />
-            {/* <Route 
-              path="/settings" 
-              element={
-                <Settings 
-                  darkMode={darkMode} 
-                  setDarkMode={setDarkMode} 
-                  setFeatures={setFeatures} 
-                  onClose={() => setMobileMenuOpen(false)} 
-                />
-              } 
-            /> */}
 
             <Route 
               path="/settings" 
@@ -254,6 +246,20 @@ function App() {
                 />
                 </ProtectedRoute>
               } 
+            />
+
+            <Route 
+              path="/library" 
+              element={
+                <ProtectedRoute>
+                <VocabularyPage
+                  darkMode={darkMode}
+                  onClose={() => setMobileMenuOpen(false)}
+                  user={user}
+                  libraries={libraries}
+                />
+                </ProtectedRoute>
+              }
             />
           
       </Routes>

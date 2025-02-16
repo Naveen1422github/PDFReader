@@ -12,7 +12,7 @@ const router = express.Router();
 
 router.get("/vocab/:id", getWordbyId);
 
-router.get("/vocab/get/all", getAllWords);
+router.get("/vocab/get/all/:user", getAllWords);
 
 router.put("/vocab/update/:id", updateWord);
 

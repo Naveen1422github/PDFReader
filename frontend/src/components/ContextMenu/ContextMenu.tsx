@@ -2,13 +2,14 @@ import  { useRef, useState, useEffect } from 'react';
 import { Brain, BookMarked, ExternalLink, Copy } from 'lucide-react';
 
 import { Library } from '../Settings/Settings';
+import { Feature } from '../Settings/Settings';
 
-interface Feature {
-  user: string;
-  name: string;
-  prompt: string;
-  enabled: boolean;
-}
+// interface Feature {
+//   user: string;
+//   name: string;
+//   prompt: string;
+//   enabled: boolean;
+// }
 
 
 
@@ -203,7 +204,6 @@ if (showSaveOptions) {
       </div>
     );
   }
-
 
   if (loading) {
     return (
